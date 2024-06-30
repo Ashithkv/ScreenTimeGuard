@@ -1,24 +1,38 @@
+// App.js
+
 import React from "react";
-import { SafeAreaView, StyleSheet } from "react-native";
-import WorkScheduleForm from "./src/components/work_schedule_form";
-import AppLimitsForm from "./src/components/app_time_limit_form";
+import "react-native-gesture-handler"; // Import gesture handler required by React Navigation
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+
+import UserRegistrationForm from "./src/components/UserRegistrationForm";
+import AddSchedulePage from "./src/components/AddSchedulePage";
+import RestrictionAppPage from "./src/components/RestrictionAppPage";
+
+const Stack = createStackNavigator();
 
 const App = () => {
   return (
-    <SafeAreaView style={styles.container}>
-      <WorkScheduleForm />
-      <AppLimitsForm />
-    </SafeAreaView>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="UserRegistration">
+        <Stack.Screen
+          name="UserRegistration"
+          component={UserRegistrationForm}
+          options={{ title: "Register" }}
+        />
+        <Stack.Screen
+          name="AddSchedule"
+          component={AddSchedulePage}
+          options={{ title: "Add Schedule" }}
+        />
+        <Stack.Screen
+          name="RestrictionApp"
+          component={RestrictionAppPage}
+          options={{ title: "Restriction App" }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-});
 
 export default App;
