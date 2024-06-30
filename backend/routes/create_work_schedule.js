@@ -1,61 +1,52 @@
+// const express = require("express");
+// const router = express.Router();
+// const Schedule = require("../models/work_schedule");
+
+// router.post("/", async (req, res) => {
+//   const { userId, day, workTimes, blockedApps, nonWorkSchedule } = req.body;
+
+//   try {
+//     const newSchedule = new Schedule({
+//       userId,
+//       day,
+//       workTimes,
+//       blockedApps,
+//       nonWorkSchedule,
+//     });
+
+//     await newSchedule.save();
+//     res.json({ message: "Schedule set successfully" });
+//   } catch (err) {
+//     console.error(err.message); // Log the error message
+//     res.status(500).json({ message: "Server error", error: err.message }); // Send error message to client
+//   }
+// });
+
+// module.exports = router;
+
 const express = require("express");
 const router = express.Router();
-const { body, validationResult } = require("express-validator");
 const WorkSchedule = require("../models/work_schedule");
 
-// Error handling middleware
-const errorHandler = (err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something went wrong!");
-};
+router.post("/", async (req, res) => {
+  const { userId, selectedDays, workTimes, blockedApps, nonWorkSchedule } =
+    req.body;
 
-// Create or update work schedule
-router.post(
-  "/",
-  body("user_id").isString(),
-  body("day").isString(),
-  body("work_time_slots").isArray(),
-  body("blocked_apps").isArray(),
-  (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      console.log("Validation errors:", errors.array());
-      return res.status(400).json({ errors: errors.array() });
-    }
+  try {
+    const newSchedule = new WorkSchedule({
+      userId,
+      selectedDays,
+      workTimes,
+      blockedApps,
+      nonWorkSchedule,
+    });
 
-    const { user_id, day, work_time_slots, blocked_apps } = req.body;
-    console.log("Received request to save work schedule:", req.body);
-
-    WorkSchedule.findOne({ user_id, day })
-      .then((workSchedule) => {
-        if (workSchedule) {
-          console.log("Work schedule found, updating:", workSchedule);
-          workSchedule.work_time_slots = work_time_slots;
-          workSchedule.blocked_apps = blocked_apps;
-          return workSchedule.save();
-        } else {
-          console.log("Creating new work schedule");
-          const newWorkSchedule = new WorkSchedule({
-            user_id,
-            day,
-            work_time_slots,
-            blocked_apps,
-          });
-          return newWorkSchedule.save();
-        }
-      })
-      .then(() => {
-        console.log("Work schedule saved successfully");
-        res.status(201).send("Work schedule saved successfully");
-      })
-      .catch((error) => {
-        console.log("Error saving work schedule:", error.message);
-        res.status(400).send("Error saving work schedule");
-      });
+    await newSchedule.save();
+    res.json({ message: "Schedule set successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
-);
-
-// Error handling middleware
-router.use(errorHandler);
+});
 
 module.exports = router;

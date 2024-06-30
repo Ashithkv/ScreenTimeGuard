@@ -1,101 +1,100 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Switch,
-  Button,
-  Alert,
-} from "react-native";
-import axios from "axios";
+// import React, { useState } from "react";
+// import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+// import axios from "axios";
 
-const RestrictionAppPage = () => {
-  const [apps, setApps] = useState([
-    { id: 1, name: "Facebook", restriction: true },
-    { id: 2, name: "Instagram", restriction: true },
-    { id: 3, name: "Youtube", restriction: true },
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
+// const RestrictionAppPage = () => {
+//   const [dayType, setDayType] = useState("");
+//   const [appLimits, setAppLimits] = useState([{ app: "", limit: "" }]);
 
-  const handleSaveRestrictions = async () => {
-    setIsLoading(true);
+//   const API_URL = "http://192.168.1.5:5000"; // Replace with your machine's local IP address
+// //
+//   const handleAddAppLimit = () => {
+//     setAppLimits([...appLimits, { app: "", limit: "" }]);
+//   };
 
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/app-time-limit",
-        {
-          user_id: "1", // Replace with actual user_id
-          app_limits: apps
-            .filter((app) => app.restriction)
-            .map((app) => ({ app_package: app.name })),
-        }
-      );
-      console.log(response.data);
-      Alert.alert("Success", "App restrictions saved successfully");
-      // Optionally, navigate to another page or provide feedback after saving
-    } catch (error) {
-      console.error("Error saving app restrictions:", error.message);
-      Alert.alert(
-        "Error",
-        "Failed to save app restrictions. Please try again later."
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+//   const handleRestriction = async () => {
+//     if (!dayType || appLimits.some((limit) => !limit.app || !limit.limit)) {
+//       Alert.alert("Validation Error", "Please fill in all fields");
+//       return;
+//     }
 
-  const toggleSwitch = (id) => {
-    const updatedApps = apps.map((app) =>
-      app.id === id ? { ...app, restriction: !app.restriction } : app
-    );
-    setApps(updatedApps);
-  };
+//     try {
+//       const response = await axios.post(`${API_URL}/api/app-restrictions`, {
+//         dayType,
+//         appLimits,
+//       });
+//       console.log("App Restriction Response data:", response.data);
+//       Alert.alert("Success", "App restrictions set successfully");
+//     } catch (error) {
+//       console.error("Error setting app restrictions:", error.message);
+//       Alert.alert("Error", `Failed to set app restrictions. ${error.message}`);
+//     }
+//   };
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Restriction App Page</Text>
-      {apps.map((app) => (
-        <View key={app.id} style={styles.appContainer}>
-          <Text>{app.name}</Text>
-          <Switch
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor={app.restriction ? "#f5dd4b" : "#f4f3f4"}
-            ios_backgroundColor="#3e3e3e"
-            onValueChange={() => toggleSwitch(app.id)}
-            value={app.restriction}
-          />
-        </View>
-      ))}
-      <Button
-        title={isLoading ? "Loading..." : "Save Restrictions"}
-        onPress={handleSaveRestrictions}
-        disabled={isLoading}
-      />
-    </ScrollView>
-  );
-};
+//   return (
+//     <View style={styles.container}>
+//       <Text style={styles.heading}>Set App Restrictions</Text>
+//       <TextInput
+//         style={styles.input}
+//         placeholder="Day Type (weekday/weekend)"
+//         value={dayType}
+//         onChangeText={setDayType}
+//       />
+//       {appLimits.map((limit, index) => (
+//         <View key={index} style={styles.appLimitContainer}>
+//           <TextInput
+//             style={styles.input}
+//             placeholder="App Package Name"
+//             value={limit.app}
+//             onChangeText={(text) => {
+//               const newAppLimits = [...appLimits];
+//               newAppLimits[index].app = text;
+//               setAppLimits(newAppLimits);
+//             }}
+//           />
+//           <TextInput
+//             style={styles.input}
+//             placeholder="Limit (e.g., 30m)"
+//             value={limit.limit}
+//             onChangeText={(text) => {
+//               const newAppLimits = [...appLimits];
+//               newAppLimits[index].limit = text;
+//               setAppLimits(newAppLimits);
+//             }}
+//           />
+//         </View>
+//       ))}
+//       <Button title="Add App Limit" onPress={handleAddAppLimit} />
+//       <Button title="Set App Restrictions" onPress={handleRestriction} />
+//     </View>
+//   );
+// };
 
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 20,
-  },
-  heading: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  appContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "80%",
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-});
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     justifyContent: "center",
+//     alignItems: "center",
+//     padding: 20,
+//   },
+//   heading: {
+//     fontSize: 24,
+//     fontWeight: "bold",
+//     marginBottom: 20,
+//   },
+//   input: {
+//     height: 40,
+//     width: "80%",
+//     borderColor: "#ccc",
+//     borderWidth: 1,
+//     marginBottom: 10,
+//     paddingHorizontal: 10,
+//   },
+//   appLimitContainer: {
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//     width: "100%",
+//   },
+// });
 
-export default RestrictionAppPage;
+// export default RestrictionAppPage;
