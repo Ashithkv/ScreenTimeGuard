@@ -1,89 +1,67 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
-import AddWorkTimePage from "./AddWorkTimePage"; // Import the modal component
+import { useRoute } from "@react-navigation/native";
+import AddWorkTimePage from "./AddWorkTimePage";
+import { fetchSchedule } from "../api/api";
 
 const SchedulePage = () => {
+  const route = useRoute();
+  const { userId } = route.params;
+  console.log("Schedule:", userId);
+
   const [modalVisible, setModalVisible] = useState(false);
-  const [savedWorkTime, setSavedWorkTime] = useState(null); // State to store saved work time data
+  const [savedWorkTime, setSavedWorkTime] = useState(null);
 
-  // Fetch saved work time data from server
   useEffect(() => {
-    fetchSavedWorkTime(); // Fetch data on component mount
-  }, []);
-
-  const fetchSavedWorkTime = async () => {
-    try {
-      const response = await fetch(
-        "http://192.168.1.5:5000/api/view-work-schedule"
-      );
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch saved work time: ${response.status} - ${response.statusText}`
-        );
+    const fetchData = async () => {
+      try {
+        const response = await fetchSchedule(userId);
+        setSavedWorkTime(response.data.schedule);
+      } catch (error) {
+        console.error("Error fetching saved work time:", error.message);
       }
-      const data = await response.json();
-      if (data.length > 0) {
-        setSavedWorkTime(data[0]);
-      }
-    } catch (error) {
-      console.error(error.message);
-      // Handle error state or display feedback to the user
-    }
-  };
+    };
+    fetchData();
+  }, [userId]);
 
-  // Function to handle saving work time
-  const saveWorkTime = (data) => {
-    setSavedWorkTime(data);
+  const handleModalClose = (workTimeData) => {
     setModalVisible(false);
-  };
-
-  // Function to handle editing work time
-  const editWorkTime = () => {
-    setModalVisible(true);
+    if (workTimeData) {
+      setSavedWorkTime(workTimeData);
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Schedules</Text>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => setModalVisible(true)} // Show the modal
-      >
-        <Text style={styles.plusSign}>+</Text>
-      </TouchableOpacity>
-      <Text style={styles.infoText}>Add your work timings</Text>
-
-      {savedWorkTime && (
-        <View style={styles.savedWorkTimeContainer}>
-          <Text style={styles.workTimeTitle}>Work Time</Text>
-          <View style={styles.selectedDaysContainer}>
+      {savedWorkTime ? (
+        <View style={styles.savedBox}>
+          <Text style={styles.title}>Work Time</Text>
+          <View style={styles.details}>
+            <Text>Days:</Text>
             {savedWorkTime.selectedDays.map((day) => (
-              <View key={day} style={styles.selectedDay}>
-                <Text style={styles.selectedDayText}>{day}</Text>
+              <View key={day} style={[styles.dayCircle, styles.selectedDay]}>
+                <Text style={[styles.dayText, styles.selectedDayText]}>
+                  {day.charAt(0)}
+                </Text>
               </View>
             ))}
+            <Text>From: {savedWorkTime.startTime}</Text>
+            <Text>To: {savedWorkTime.endTime}</Text>
           </View>
-          {savedWorkTime.workTimes.map((workTime, index) => (
-            <View key={index} style={styles.timeDetails}>
-              <Text style={styles.timeLabel}>Start Time:</Text>
-              <Text style={styles.timeValue}>{workTime.startTime}</Text>
-              <Text style={styles.timeLabel}>End Time:</Text>
-              <Text style={styles.timeValue}>{workTime.endTime}</Text>
-            </View>
-          ))}
-          <TouchableOpacity style={styles.editButton} onPress={editWorkTime}>
+          <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
             <Text style={styles.editButtonText}>EDIT</Text>
           </TouchableOpacity>
         </View>
+      ) : (
+        <Text></Text>
       )}
-
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)} // Close the modal
-      >
-        <AddWorkTimePage onClose={saveWorkTime} />
+      <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+        <Text style={styles.plusSign}>+</Text>
+      </TouchableOpacity>
+      <Text style={styles.infoText}>Add your work timings</Text>
+      <Modal visible={modalVisible} animationType="slide" transparent={true} onRequestClose={() => setModalVisible(false)}>
+        <AddWorkTimePage onClose={handleModalClose} userId={userId} />
       </Modal>
     </View>
   );
@@ -92,84 +70,75 @@ const SchedulePage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    justifyContent: "center",
+    padding: 16,
   },
   heading: {
-    fontSize: 38,
+    fontSize: 35,
     marginBottom: 20,
-    color: "#00008B",
-  },
-  addButton: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: "#e1f5fe",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  plusSign: {
-    fontSize: 40,
     color: "#0288d1",
   },
-  infoText: {
-    fontSize: 16,
-    color: "#0288d1",
-  },
-  savedWorkTimeContainer: {
+  savedBox: {
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
     marginTop: 20,
     width: "80%",
   },
-  workTimeTitle: {
+  title: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
   },
-  selectedDaysContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+  details: {
     marginBottom: 10,
+  },
+  dayCircle: {
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    borderWidth: 2,
+    borderColor: "#e1f5fe",
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 1,
   },
   selectedDay: {
-    backgroundColor: "#0288d1",
-    borderRadius: 5,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    marginRight: 5,
-    marginBottom: 5,
+    borderColor: "#0288d1",
+  },
+  dayText: {
+    fontSize: 16,
   },
   selectedDayText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  timeDetails: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  timeLabel: {
-    fontWeight: "bold",
-    marginRight: 10,
-  },
-  timeValue: {
-    fontSize: 16,
+    color: "#0288d1",
   },
   editButton: {
     backgroundColor: "#0288d1",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
-    marginTop: 10,
-    alignSelf: "flex-end",
   },
   editButtonText: {
     color: "#fff",
     fontSize: 16,
+  },
+  addButton: {
+    backgroundColor: "#0288d1",
+    borderRadius: 50,
+    width: 60,
+    height: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  plusSign: {
+    color: "#fff",
+    fontSize: 30,
+  },
+  infoText: {
+    marginTop: 10,
+    color: "#0288d1",
   },
 });
 

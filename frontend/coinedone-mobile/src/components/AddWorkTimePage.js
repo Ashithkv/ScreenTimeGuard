@@ -1,259 +1,174 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { saveSchedule } from "../api/api";
+import RNPickerSelect from "react-native-picker-select";
 
-const AddWorkTimePage = ({ onClose }) => {
-  // State variables
-  const [selectedDays, setSelectedDays] = useState([]);
+const AddWorkTimePage = ({ onClose, userId }) => {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [selectedDays, setSelectedDays] = useState([]);
+  const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-  // Days of the week
-  const daysOfWeek = [
-    { id: "Monday", label: "Monday" },
-    { id: "Tuesday", label: "Tuesday" },
-    { id: "Wednesday", label: "Wednesday" },
-    { id: "Thursday", label: "Thursday" },
-    { id: "Friday", label: "Friday" },
-    { id: "Saturday", label: "Saturday" },
-    { id: "Sunday", label: "Sunday" },
-  ];
-
-  // Time options for picker
-  const timeOptions = [
-    "12:00 AM",
-    "1:00 AM",
-    "2:00 AM",
-    "3:00 AM",
-    "4:00 AM",
-    "5:00 AM",
-    "6:00 AM",
-    "7:00 AM",
-    "8:00 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
-    "8:00 PM",
-    "9:00 PM",
-    "10:00 PM",
-    "11:00 PM",
-  ];
-
-  // Function to toggle selected days
-  const toggleDay = (dayId) => {
-    setSelectedDays((prev) =>
-      prev.includes(dayId) ? prev.filter((d) => d !== dayId) : [...prev, dayId]
+  const toggleDay = (day) => {
+    setSelectedDays((prevSelectedDays) =>
+      prevSelectedDays.includes(day) ? prevSelectedDays.filter((d) => d !== day) : [...prevSelectedDays, day]
     );
   };
 
-  // Function to save work time
-  const saveWorkTime = async () => {
-    const userId = "668130ec94131ae44f9f43b8"; // Replace with actual user ID retrieval logic
-    const scheduleData = {
-      userId,
-      selectedDays,
-      startTime,
-      endTime,
-    };
+  const handleSave = async () => {
+    if (!startTime || !endTime || selectedDays.length === 0) {
+      Alert.alert("Validation Error", "Please fill in all fields and select days");
+      return;
+    }
 
     try {
-      const response = await fetch("http://192.168.1.5:5000/api/schedules", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(scheduleData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save schedule");
-      }
-
-      const data = await response.json();
-      console.log(data.message); // Log success message
-      onClose(); // Close the modal
+      const response = await saveSchedule({ startTime, endTime, selectedDays, userId });
+      Alert.alert("Success", "Work time saved successfully");
+      onClose({ startTime, endTime, selectedDays });
     } catch (error) {
-      console.error("Error saving schedule:", error.message);
-      // Handle error state or feedback to the user
+      Alert.alert("Error", `Failed to save work time. ${error.message}`);
+      console.log(error);
     }
   };
 
   return (
-    <View style={styles.modalContainer}>
-      <View style={styles.modalContent}>
+    <View style={styles.container}>
+      <View style={styles.header}>
         <Text style={styles.heading}>Add Work Time</Text>
-
-        {/* Days selection */}
-        <Text style={styles.subHeading}>Days Active</Text>
-        <View style={styles.daysContainer}>
-          {daysOfWeek.map((day) => (
-            <TouchableOpacity
-              key={day.id}
-              style={[
-                styles.dayCircle,
-                selectedDays.includes(day.id) && styles.selectedDay,
-              ]}
-              onPress={() => toggleDay(day.id)}
-            >
-              <Text
-                style={[
-                  styles.dayText,
-                  selectedDays.includes(day.id) && styles.selectedDayText,
-                ]}
-              >
-                {day.label.charAt(0)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Work times */}
-        {/* <Text style={styles.subHeading}>Work Times</Text> */}
-        <View style={styles.timeContainer}>
-          <View style={styles.timeBox}>
-            <Text style={styles.timeLabel}>From</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={startTime}
-                style={styles.picker}
-                onValueChange={(itemValue) => setStartTime(itemValue)}
-              >
-                {timeOptions.map((time, index) => (
-                  <Picker.Item key={index} label={time} value={time} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-          <View style={styles.timeBox}>
-            <Text style={styles.timeLabel}>To</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={endTime}
-                style={styles.picker}
-                onValueChange={(itemValue) => setEndTime(itemValue)}
-              >
-                {timeOptions.map((time, index) => (
-                  <Picker.Item key={index} label={time} value={time} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-        </View>
-
-        {/* Save and Close buttons */}
-        <TouchableOpacity style={styles.saveButton} onPress={saveWorkTime}>
-          <Text style={styles.saveButtonText}>SAVE</Text>
+        <TouchableOpacity onPress={() => onClose(null)} style={styles.closeButton}>
+          <Text style={styles.closeButtonText}>X</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeButtonText}>CLOSE</Text>
-        </TouchableOpacity>
+      </View>
+      <View style={styles.daysContainer}>
+        {daysOfWeek.map((day) => (
+          <TouchableOpacity key={day} style={[styles.dayCircle, selectedDays.includes(day) && styles.selectedDay]} onPress={() => toggleDay(day)}>
+            <Text style={[styles.dayText, selectedDays.includes(day) && styles.selectedDayText]}>{day.charAt(0)}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <RNPickerSelect
+        style={pickerSelectStyles}
+        onValueChange={(value) => setStartTime(value)}
+        placeholder={{ label: "Select Start Time", value: null }}
+        items={generateTimeOptions()}
+      />
+      <RNPickerSelect
+        style={pickerSelectStyles}
+        onValueChange={(value) => setEndTime(value)}
+        placeholder={{ label: "Select End Time", value: null }}
+        items={generateTimeOptions()}
+      />
+      <View style={styles.buttonContainer}>
+        <Button title="Save" onPress={handleSave} style={styles.buttonOk} />
       </View>
     </View>
   );
 };
 
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 4,
+    color: "black",
+    paddingRight: 30,
+    marginBottom: 10,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderWidth: 0.5,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    color: "black",
+    paddingRight: 30,
+    marginBottom: 10,
+    marginRight: 50,
+    marginLeft: 50,
+  },
+});
+
+// function to generate time options in AM/PM format
+const generateTimeOptions = () => {
+  const timeOptions = [];
+  for (let hour = 0; hour <= 23; hour++) {
+    const period = hour >= 12 ? "PM" : "AM";
+    const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const time = `${hour12.toString().padStart(2, "0")}:00 ${period}`;
+    timeOptions.push({ label: time, value: time });
+  }
+  return timeOptions;
+};
+
+
 const styles = StyleSheet.create({
-  modalContainer: {
+  buttonContainer: {
+    justifyContent: "center",
+    width: "100%",
+    paddingHorizontal: 100, 
+    marginTop: 20, 
+  },
+  buttonOk: {
+    backgroundColor: "#0288d1",
+    paddingVertical: 10,
+    paddingHorizontal: 100,
+    borderRadius: 5,
+  },
+  container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalContent: {
-    width: "80%",
+    padding: 20,
+    width: "100%",
+    marginTop: 200,
+    marginBottom: 200,
     backgroundColor: "#fff",
     borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
   },
-  heading: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-  subHeading: {
-    fontSize: 18,
-    marginBottom: 10,
-  },
-  daysContainer: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     width: "100%",
     marginBottom: 20,
   },
+  heading: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    padding: 10,
+  },
+  closeButtonText: {
+    fontSize: 20,
+    color: "#0288d1",
+  },
+  daysContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
   dayCircle: {
-    width: 35,
-    height: 35,
-    borderRadius: 20,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     borderWidth: 2,
     borderColor: "#e1f5fe",
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 1,
+    marginHorizontal: 5,
   },
   selectedDay: {
     borderColor: "#0288d1",
   },
   dayText: {
-    fontSize: 18,
-    color: "#0288d1",
+    fontSize: 16,
   },
   selectedDayText: {
     color: "#0288d1",
-  },
-  timeContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 10,
-  },
-  timeBox: {
-    flex: 1,
-    alignItems: "center",
-  },
-  timeLabel: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: "#0288d1",
-  },
-  pickerContainer: {
-    borderColor: "#0288d1",
-    borderWidth: 1,
-    borderRadius: 5,
-    overflow: "hidden",
-    width: "95%",
-    height: 40,
-    justifyContent: "center",
-  },
-  picker: {
-    width: 150,
-    height: 50,
-    left: -15,
-  },
-  saveButton: {
-    backgroundColor: "#0288d1",
-    paddingVertical: 10,
-    paddingHorizontal: 100,
-    borderRadius: 5,
-    marginTop: 20,
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-  closeButton: {
-    marginTop: 10,
-  },
-  closeButtonText: {
-    color: "#0288d1",
-    fontSize: 16,
   },
 });
 

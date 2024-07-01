@@ -5,23 +5,25 @@ const bodyParser = require("body-parser");
 
 const app = express();
 
-// Middleware
+// middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Import routes
+// import routes
 const usersRoute = require("./routes/create_user");
 const schedulesRoute = require("./routes/create_work_schedule");
 const appRestrictionsRoute = require("./routes/create_app_restriction");
 const viewWorkScheduleRouter = require("./routes/view_work_schedule");
+const updateWorkScheduleRouter = require("./routes/update_work_schedule");
 
-// Use routes
+// use routes
 app.use("/api/users", usersRoute);
 app.use("/api/schedules", schedulesRoute);
 app.use("/api/app-restrictions", appRestrictionsRoute);
 app.use("/api/view-work-schedule", viewWorkScheduleRouter);
+app.use("/api/update-work-schedule", updateWorkScheduleRouter);
 
-// Connect to DB
+// connect to DB
 mongoose
   .connect("mongodb://localhost:27017/social_media_controller_app", {
     useNewUrlParser: true,

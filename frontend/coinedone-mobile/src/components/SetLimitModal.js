@@ -6,7 +6,7 @@ const SetLimitModal = ({ navigation }) => {
   const [weekendLimit, setWeekendLimit] = useState("");
 
   const handleSaveLimit = () => {
-    // Save limit logic
+    // limit
   };
 
   return (

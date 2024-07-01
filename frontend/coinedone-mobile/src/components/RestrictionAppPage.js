@@ -6,7 +6,7 @@
 //   const [dayType, setDayType] = useState("");
 //   const [appLimits, setAppLimits] = useState([{ app: "", limit: "" }]);
 
-//   const API_URL = "http://192.168.1.5:5000"; // Replace with your machine's local IP address
+//   const API_URL = "http://192.168.1.5:5000"; 
 // //
 //   const handleAddAppLimit = () => {
 //     setAppLimits([...appLimits, { app: "", limit: "" }]);

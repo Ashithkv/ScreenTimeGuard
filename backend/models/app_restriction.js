@@ -1,12 +1,26 @@
 const mongoose = require("mongoose");
 
 const appRestrictionSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  dayType: { type: String, enum: ["weekday", "weekend"], required: true },
+  userId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "User", 
+    required: true 
+  },
+  dayType: { 
+    type: String, 
+    enum: ["weekday", "weekend"], 
+    required: true 
+  },
   appLimits: [
     {
-      app: { type: String, required: true },
-      limit: { type: String, required: true },
+      app: { 
+        type: String,
+        required: true 
+      },
+      limit: { 
+        type: String, 
+        required: true 
+      },
     },
   ],
 });
