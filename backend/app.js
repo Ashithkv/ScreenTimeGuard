@@ -1,9 +1,12 @@
+// app.js
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+require('dotenv').config();  // Load environment variables from .env file
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // middleware
 app.use(cors());
@@ -24,19 +27,32 @@ app.use("/api/view-work-schedule", viewWorkScheduleRouter);
 app.use("/api/update-work-schedule", updateWorkScheduleRouter);
 
 // connect to DB
-mongoose
-  .connect("mongodb://localhost:27017/social_media_controller_app", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
+mongoose.connect(process.env.DB_CONNECTION_STRING, { 
+    useNewUrlParser: true, 
+    useUnifiedTopology: true 
   })
   .then(() => {
     console.log("Connected to DB");
-  })
-  .catch((err) => {
-    console.error("Error connecting to DB:", err.message);
-  });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    const server = app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`Port ${PORT} is already in use`);
+      } else {
+        console.error(`Server error: ${err.message}`);
+      }
+      process.exit(1);
+    });
+
+  })
+  .catch(err => console.error("Could not connect to DB", err));
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  server.close(() => {
+    console.log('Process terminated');
+  });
 });

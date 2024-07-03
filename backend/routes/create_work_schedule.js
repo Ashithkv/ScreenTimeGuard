@@ -1,54 +1,44 @@
-
-// const express = require("express");
-// const router = express.Router();
-// const WorkSchedule = require("../models/work_schedule");
-
-// router.post("/", async (req, res) => {
-//   const { userId, selectedDays, workTimes, blockedApps, nonWorkSchedule } =
-//     req.body;
-
-//   try {
-//     const newSchedule = new WorkSchedule({
-//       userId,
-//       selectedDays,
-//       workTimes,
-//       blockedApps,
-//       nonWorkSchedule,
-//     });
-
-//     await newSchedule.save();
-//     res.json({ message: "Schedule set successfully" });
-//   } catch (err) {
-//     console.error(err.message);
-//     res.status(500).json({ message: "Server error", error: err.message });
-//   }
-// });
-
-// module.exports = router;
-
 const express = require('express');
 const router = express.Router();
 const WorkSchedule = require('../models/work_schedule');
 
+// function to convert HH:mm string to Date object
+function convertTimeStringToDate(timeString) {
+  const [hours, minutes] = timeString.split(':');
+  const date = new Date();
+  date.setHours(parseInt(hours, 10));
+  date.setMinutes(parseInt(minutes, 10));
+  return date;
+}
+
 router.post('/', async (req, res) => {
-  const { startTime, endTime, selectedDays, userId } = req.body;
+  const { userId, selectedDays, workTimes, blockedApps, nonWorkSchedule } = req.body;
 
   if (!userId) {
-    return res.status(400).send({ error: "userId is required" });
+    return res.json({ error: "Missing required fields" });
   }
+  console.log("user _id______:", userId)
 
   const newWorkSchedule = new WorkSchedule({
     userId,
     selectedDays,
-    workTimes: [{ startTime, endTime }]
+    workTimes: workTimes.map(time => ({
+      startTime: convertTimeStringToDate(time.startTime),
+      endTime: convertTimeStringToDate(time.endTime)
+    })),
+    blockedApps,
+    nonWorkSchedule,
   });
 
-  try {
-    const savedSchedule = await newWorkSchedule.save();
-    res.status(201).send(savedSchedule);
-  } catch (error) {
-    res.status(500).send({ error: error.message });
-  }
+  newWorkSchedule.save()
+    .then(savedSchedule => {
+      console.log("data", savedSchedule);
+      res.json({ message: "Successfully created work schedule", savedSchedule });
+    })
+    .catch(error => {
+      console.log("Error saving work schedule:", error);
+      res.json({ error: "Server error", message: error.message });
+    });
 });
 
 module.exports = router;
