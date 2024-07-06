@@ -3,7 +3,15 @@ const mongoose = require("mongoose");
 const appRestrictionSchema = new mongoose.Schema({
   userId: { 
     type: mongoose.Schema.Types.ObjectId, 
-    // ref: "User", 
+    required: true 
+  },
+  workScheduleId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    required: true 
+  },
+  mode: { 
+    type: String, 
+    enum: ["work-time", "non-work-time"], 
     required: true 
   },
   dayType: { 
@@ -11,15 +19,27 @@ const appRestrictionSchema = new mongoose.Schema({
     enum: ["weekday", "weekend"], 
     required: true 
   },
-  appLimits: [
+  blockedApps: [
     {
       app: { 
-        type: String,
-        required: true 
-      },
-      limit: { 
         type: String, 
         required: true 
+      },
+    },
+  ],
+  limitedApps: [
+    {
+      app: { 
+        type: String, 
+        required: true 
+      },
+      weekdayLimit: { 
+        type: String, 
+        required: true,
+      },
+      weekendLimit: { 
+        type: String, 
+        required: true,
       },
     },
   ],

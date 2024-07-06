@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const workScheduleSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // Assuming there's a User model to reference
+    ref: "User", 
     required: true,
   },
   selectedDays: {
@@ -14,7 +14,7 @@ const workScheduleSchema = new mongoose.Schema({
   workTimes: {
     type: [
       {
-        startTime: {
+        startTime: { 
           type: Date,
           required: true,
         },
@@ -38,7 +38,7 @@ const workScheduleSchema = new mongoose.Schema({
           required: true,
         },
         limit: {
-          type: Number, // Assuming limit is in minutes
+          type: Number, 
           required: true,
         },
       }

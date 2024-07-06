@@ -12,7 +12,7 @@ function convertTimeStringToDate(timeString) {
 }
 
 router.post('/', async (req, res) => {
-  const { userId, selectedDays, workTimes, blockedApps, nonWorkSchedule } = req.body;
+  const { userId, selectedDays, workTimes } = req.body;
 
   if (!userId) {
     return res.json({ error: "Missing required fields" });
@@ -26,8 +26,6 @@ router.post('/', async (req, res) => {
       startTime: convertTimeStringToDate(time.startTime),
       endTime: convertTimeStringToDate(time.endTime)
     })),
-    blockedApps,
-    nonWorkSchedule,
   });
 
   newWorkSchedule.save()
